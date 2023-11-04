@@ -3,6 +3,7 @@ import { createYoga, createSchema } from 'graphql-yoga'
 const typeDefs = /* GraphQL */ `
   type Query {
     users: [User!]!
+    hello: String
   }
   type User {
     name: String
@@ -14,6 +15,7 @@ const resolvers = {
     users() {
       return [{ name: 'Nextjs' }]
     },
+    hello: () => 'world',
   },
 }
 
@@ -28,6 +30,7 @@ export const config = {
     bodyParser: false,
   },
 }
+
 
 export default createYoga({
   schema,

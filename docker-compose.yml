@@ -1,0 +1,67 @@
+version: '3'
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+      - redis
+    expose: 
+      - "3000"
+    environment:
+      NODE_ENV: development
+      SERVER_PORT: 3000
+      MYSQL_DATABASE: api_test
+      MYSQL_USER: root
+      MYSQL_PASSWORD: omghowwedoing
+      MYSQL_HOST: mysql
+    networks:
+      - app-network
+    volumes:
+      - ./src:/app/src
+    command: ["npm", "run", "dev"]
+    restart: always
+
+  http:
+    image: nginx:1.25-alpine-slim
+    volumes:
+      - ./conf/nginx-templates:/etc/nginx/templates
+    ports:
+      - "8080:80"
+    environment:
+      NGINX_PORT: 80
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: omghowwedoing
+      MYSQL_DATABASE: api_test
+    ports:
+      - "3306:3306"      
+    volumes:
+      - ./data/mysql/fixtures:/docker-entrypoint-initdb.d/:ro
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: on-failure
+
+  redis:
+    image: redis:7.2-alpine
+    ports:
+      - "6379:6379"    
+    networks:
+      - app-network
+    restart: on-failure      
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
